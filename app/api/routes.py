@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Form, File, UploadFile, HTTPException
-
+import traceback
 from app.schemas.dto import AnalyzeResponse
 from app.services.analyzer_service import EmailAnalyzerService
 
@@ -29,8 +29,9 @@ async def analyze(
      analyzer = EmailAnalyzerService()
      result = await analyzer.analyze(text=text, file=file)
      return result
-  except Exception:
-     raise HTTPException(
+  except Exception as e:
+   traceback.print_exc()
+   raise HTTPException(
         status_code=500,
-        detail="Erro ao processar a mensagem do email"
-     )
+        detail=f"Erro ao processar a mensagem do email: {str(e)}"
+   )

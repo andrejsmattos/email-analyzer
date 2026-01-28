@@ -6,3 +6,4 @@ class AnalyzeResponse(BaseModel):
   suggested_reply: str
   confidence: Optional[float] = None
   extracted_chars: Optional[float] = None
+  content: Optional[str] = None
