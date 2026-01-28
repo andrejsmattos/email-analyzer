@@ -4,11 +4,11 @@ from app.schemas.dto import AnalyzeResponse
 from app.services.analyzer_service import EmailAnalyzerService
 
 router = APIRouter()
+analyzer = EmailAnalyzerService()
 
 @router.get("/health")
 def health():
     return {"status": "ok"}
-
 
 @router.post("/analyze", response_model=AnalyzeResponse)
 async def analyze(
@@ -19,6 +19,9 @@ async def analyze(
   Analisa um email enviado como texto ou arquivo (.txt ou .pdf)
   """
 
+  if file is not None and not getattr(file, "filename", None):
+     file = None
+
   if (not text or not text.strip()) and file is None:
      raise HTTPException(
         status_code=400,
@@ -26,9 +29,11 @@ async def analyze(
      )
   
   try:
-     analyzer = EmailAnalyzerService()
-     result = await analyzer.analyze(text=text, file=file)
-     return result
+     return await analyzer.analyze(text=text, file=file)
+  
+  except HTTPException:
+     raise
+
   except Exception as e:
    traceback.print_exc()
    raise HTTPException(
