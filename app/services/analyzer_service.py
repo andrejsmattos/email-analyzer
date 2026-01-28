@@ -1,3 +1,5 @@
+from app.utils.file_reader import extract_text
+from app.utils.text_preprocessor import preprocess_text
 from fastapi import UploadFile
 from app.schemas.dto import AnalyzeResponse
 
@@ -15,9 +17,17 @@ class EmailAnalyzerService:
         if text and text.strip():
             content = text.strip()
         elif file:
-            content = f"Arquivo recebido: {file.filename}"
+            content = await extract_text(file)
         else:
             content = ""
+
+        content = preprocess_text(content)
+
+        if not content:
+            raise HTTPException(
+                status=400,
+                detail="Conteúdo do email está vazio após o pré-processamento"
+            )
 
         return AnalyzeResponse(
             category="IMPRODUTIVO",
@@ -26,5 +36,6 @@ class EmailAnalyzerService:
                 "Esta é uma resposta automática inicial."
             ),
             confidence=0.50,
-            extracted_chars=len(content)
+            extracted_chars=len(content),
+            content=content
         )
