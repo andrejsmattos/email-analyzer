@@ -55,7 +55,18 @@ async def general_exception_handler(request, exc: Exception):
     """
     Handler para exceções genéricas não tratadas
     """
-    logger.error(f"Unhandled Exception: {str(exc)}", exc_info=True)
+    error_type = type(exc).__name__
+    error_msg = str(exc)
+    
+    logger.error(
+        f"Unhandled Exception [{error_type}]: {error_msg}",
+        exc_info=True,
+        extra={
+            "path": request.url.path,
+            "method": request.method,
+            "error_type": error_type
+        }
+    )
     
     error_response = ErrorDetail(
         error=True,

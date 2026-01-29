@@ -16,6 +16,7 @@ Além da classificação, o sistema gera automaticamente sugestões de resposta 
 - **FastAPI** - Framework web moderno e rápido
 - **OpenAI API** - LLM para análise e classificação
 - **Pydantic** - Validação de dados
+- **spaCy** - Processamento NLP em português
 - **Python 3.11+** - Linguagem base
 - **pypdf** - Extração de texto de PDFs
 
@@ -55,6 +56,14 @@ source venv/bin/activate
 ```bash
 pip install -r requirements.txt
 ```
+
+5. **[Opcional]** Instale o modelo de linguagem português para lemmatização avançada:
+
+```bash
+python -m spacy download pt_core_news_sm
+```
+
+Este modelo é opcional e melhora a qualidade do pré-processamento, mas não é obrigatório para o funcionamento básico.
 
 ## 🔑 Configuração
 
@@ -192,7 +201,31 @@ response = requests.post(
 print(response.json())
 ```
 
-## 🛡️ Tratamento de Erros
+## � Pré-processamento de Texto
+
+O sistema realiza pré-processamento robusto dos emails antes da análise:
+
+1. **Normalização** - Remove espaços duplicados, tabs e quebras de linha excessivas
+2. **Lowercase** - Converte todo o texto para minúsculas
+3. **Remoção de Pontuação** - Remove caracteres especiais (mantém acentos)
+4. **Remoção de Stop Words** - Remove palavras vazias em português (a, o, de, etc)
+5. **Remoção de Números** - Remove números isolados
+6. **Tokenização** - Divide o texto em palavras
+
+Exemplo de transformação:
+
+```
+Original: "Olá! Temos um PROBLEMA crítico no sistema (2024). Respondam URGENTE!!!"
+Processado: "problema crítico sistema responda urgente"
+```
+
+Funções disponíveis em `app/utils/text_preprocessor.py`:
+
+- `preprocess_text()` - Pré-processa o texto completo
+- `get_tokens()` - Retorna lista de palavras
+- `get_text_stats()` - Retorna estatísticas de processamento
+
+## �🛡️ Tratamento de Erros
 
 O sistema possui tratamento robusto de erros:
 
@@ -202,7 +235,6 @@ O sistema possui tratamento robusto de erros:
 - **503**: Serviço de IA indisponível
 
 Todos os erros retornam mensagens amigáveis em português.
-
 
 ## 👤 Autor
 

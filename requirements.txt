@@ -12,6 +12,10 @@ openai==1.59.7
 # Processamento de arquivos
 pypdf==5.1.0
 
+# NLP e processamento de texto
+spacy==3.7.2
+nltk==3.8.1
+
 # Variáveis de ambiente
 python-dotenv==1.0.1
 
