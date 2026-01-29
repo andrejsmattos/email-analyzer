@@ -22,7 +22,10 @@ async def analyze(
   if file is not None and not getattr(file, "filename", None):
      file = None
 
-  if (not text or not text.strip()) and file is None:
+  # Validar entrada: pelo menos texto válido ou arquivo
+  text_valid = text and isinstance(text, str) and text.strip()
+  
+  if not text_valid and file is None:
      raise HTTPException(
         status_code=400,
         detail="Envie um texto ou um arquivo (em .pdf ou .txt) para a análise do email"
