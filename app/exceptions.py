@@ -6,6 +6,7 @@ Centraliza toda a lógica de tratamento de erros.
 from fastapi import HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
+from app.schemas.dto import ErrorDetail, ValidationErrorDetail
 import logging
 
 logger = logging.getLogger(__name__)
@@ -17,14 +18,16 @@ async def http_exception_handler(request, exc: HTTPException):
     """
     logger.warning(f"HTTPException: {exc.status_code} - {exc.detail}")
     
+    error_response = ErrorDetail(
+        error=True,
+        status_code=exc.status_code,
+        detail=exc.detail,
+        message=_get_error_message(exc.status_code)
+    )
+    
     return JSONResponse(
         status_code=exc.status_code,
-        content={
-            "error": True,
-            "status_code": exc.status_code,
-            "detail": exc.detail,
-            "message": _get_error_message(exc.status_code)
-        }
+        content=error_response.model_dump()
     )
 
 
@@ -34,15 +37,17 @@ async def validation_exception_handler(request, exc: RequestValidationError):
     """
     logger.warning(f"Validation Error: {exc.errors()}")
     
+    error_response = ValidationErrorDetail(
+        error=True,
+        status_code=422,
+        detail="Validação de requisição falhou",
+        message="Os dados enviados não são válidos. Verifique o formato.",
+        errors=exc.errors()
+    )
+    
     return JSONResponse(
         status_code=422,
-        content={
-            "error": True,
-            "status_code": 422,
-            "detail": "Validação de requisição falhou",
-            "message": "Os dados enviados não são válidos. Verifique o formato.",
-            "errors": exc.errors()
-        }
+        content=error_response.model_dump()
     )
 
 
@@ -52,14 +57,16 @@ async def general_exception_handler(request, exc: Exception):
     """
     logger.error(f"Unhandled Exception: {str(exc)}", exc_info=True)
     
+    error_response = ErrorDetail(
+        error=True,
+        status_code=500,
+        detail="Erro interno do servidor",
+        message="Ocorreu um erro inesperado. Tente novamente mais tarde."
+    )
+    
     return JSONResponse(
         status_code=500,
-        content={
-            "error": True,
-            "status_code": 500,
-            "detail": "Erro interno do servidor",
-            "message": "Ocorreu um erro inesperado. Tente novamente mais tarde."
-        }
+        content=error_response.model_dump()
     )
 
 
