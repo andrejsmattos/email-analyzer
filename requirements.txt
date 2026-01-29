@@ -1,0 +1,23 @@
+# Web Framework
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+
+# Validação de dados
+pydantic==2.10.5
+pydantic-settings==2.7.1
+
+# Cliente OpenAI
+openai==1.59.7
+
+# Processamento de arquivos
+pypdf==5.1.0
+
+# NLP e processamento de texto
+spacy==3.7.2
+nltk==3.8.1
+
+# Variáveis de ambiente
+python-dotenv==1.0.1
+
+# Utilitários
+python-multipart==0.0.20  # Para upload de arquivos no FastAPI
