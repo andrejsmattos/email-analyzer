@@ -1,12 +1,15 @@
-from app.clients.ai_client import AIClient
+from app.clients.llm_client import OpenAILLMClient
 from app.utils.file_reader import extract_text
 from app.utils.text_preprocessor import preprocess_text
 from fastapi import HTTPException, UploadFile
 from app.schemas.dto import AnalyzeResponse
+import logging
+
+logger = logging.getLogger(__name__)
 
 class EmailAnalyzerService:
   def __init__(self):
-      self.ai_client = AIClient()
+      self.ai_client = OpenAILLMClient()
 
 
   async def analyze(
@@ -30,16 +33,24 @@ class EmailAnalyzerService:
 
         if not content:
             raise HTTPException(
-                status=400,
+                status_code=400,
                 detail="Conteúdo do email está vazio"
             )
         
-        ai_result = self.ai_client.analyze(content)
+        try:
+            ai_result = self.ai_client.analyze(content)
+        except Exception as e:
+            logger.error(f"Erro ao analisar com IA: {str(e)}")
+            raise HTTPException(
+                status_code=503,
+                detail="Serviço de IA indisponível. Tente novamente mais tarde."
+            )
 
         return AnalyzeResponse(
             category=ai_result["category"],
             suggested_reply=ai_result["suggested_reply"],
             confidence=ai_result["confidence"],
             extracted_chars=len(content),
-            content=content
+            content=content,
+            reason=ai_result["reason"]
         )
