@@ -21,31 +21,13 @@ class AnalyzeResponse(BaseModel):
     le=1.0,
     example=0.95
   )
-  extracted_chars: Optional[int] = Field(
-    default=None,
-    description="Número de caracteres extraídos",
-    example=256
-  )
-  content: Optional[str] = Field(
-    default=None,
-    description="Conteúdo processado do email",
-    example="Este é um email de teste para classificação"
-  )
-  reason: Optional[str] = Field(
-    default=None,
-    description="Justificativa da classificação",
-    example="Email contém solicitação de suporte e requer resposta"
-  )
 
   class Config:
     json_schema_extra = {
       "example": {
         "category": "PRODUTIVO",
         "suggested_reply": "Olá! Recebemos sua mensagem e iremos analisar sua solicitação em breve. Se possível, envie mais detalhes.",
-        "confidence": 0.92,
-        "extracted_chars": 245,
-        "content": "Prezados, temos um problema com o sistema XYZ...",
-        "reason": "Email contém problema/erro que requer ação e resposta"
+        "confidence": 0.92
       }
     }
 

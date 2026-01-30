@@ -107,6 +107,7 @@ def _fallback_classify(content: str) -> dict:
     """
     Classificação heurística quando LLM falha.
     Baseada em keywords para determinar se requer ação.
+    A confiança reflete o quão claro foi a decisão.
     
     Args:
         content: Texto preprocessado
@@ -145,33 +146,40 @@ def _fallback_classify(content: str) -> dict:
     produtivo_count = sum(1 for kw in produtivo_keywords if kw in content_lower)
     improdutivo_count = sum(1 for kw in improdutivo_keywords if kw in content_lower)
     
-    # Decidir baseado em contagem e gerar resposta apropriada
-    if improdutivo_count > produtivo_count:
-        categoria = EmailCategory.IMPRODUTIVO
-        
-        # Gerar resposta mais personalizada para IMPRODUTIVO
-        if "agradeç" in content_lower or "obrigad" in content_lower:
-            if "resolveu" in content_lower or "funcionou" in content_lower:
-                reply = "Ótimo! Fico feliz que conseguimos resolver. Qualquer dúvida no futuro, é só chamar!"
-            else:
-                reply = "Obrigado! Seu feedback é muito importante para nós. Estamos sempre aqui para ajudar!"
-        elif "parabéns" in content_lower or "sucesso" in content_lower:
-            reply = "Muito obrigado! Continuaremos trabalhando para oferecer o melhor serviço."
-        elif "informação" in content_lower or "aviso" in content_lower:
-            reply = "Mensagem recebida. Obrigado por nos manter informados!"
-        else:
-            reply = "Obrigado pelo contato! Continuamos à disposição se precisar."
+    # Calcular confiança baseado em clareza da decisão
+    total_keywords = produtivo_count + improdutivo_count
+    if total_keywords == 0:
+        # Nenhuma keyword encontrada = baixíssima confiança
+        confidence = 0.3
     else:
-        # Padrão conservador: se em dúvida, considera PRODUTIVO
+        # Quanto maior a diferença, maior a confiança
+        diff = abs(produtivo_count - improdutivo_count)
+        # Escala: 0 (empate) até 1.0 (muito claro)
+        confidence = min(0.95, 0.3 + (diff / total_keywords) * 0.65)
+    
+    # Decidir baseado em contagem e contexto
+    if len(content.strip()) < 10:
+        # Textos muito curtos são improdutivos (spam, testes, etc)
+        categoria = EmailCategory.IMPRODUTIVO
+        reply = "Olá! Recebemos sua mensagem, mas ela parece estar incompleta. Envie mais detalhes para que possamos ajudar."
+        confidence = 0.5  # Média confiança para textos muito curtos
+    elif improdutivo_count > produtivo_count:
+        categoria = EmailCategory.IMPRODUTIVO
+        reply = "Olá! Obrigado pelo contato. Mensagem recebida."
+    elif produtivo_count > improdutivo_count:
         categoria = EmailCategory.PRODUTIVO
         reply = (
             "Olá! Recebemos sua mensagem e vamos analisar sua solicitação. "
-            "Se possível, envie mais detalhes para agilizar o atendimento."
+            "Se possível, envie mais detalhes para agilizar."
         )
+    else:
+        # Empate ou ambos 0: sem contexto suficiente = IMPRODUTIVO
+        categoria = EmailCategory.IMPRODUTIVO
+        reply = "Olá! Recebemos sua mensagem, mas não identificamos uma solicitação clara. Envie mais informações."
     
     return {
         "category": categoria,
         "suggested_reply": reply,
-        "confidence": 0.4,  # Baixa confiança em fallback
+        "confidence": round(confidence, 2),
         "reason": f"Fallback: análise heurística (produtivo_score={produtivo_count}, improdutivo_score={improdutivo_count})"
     }
