@@ -71,11 +71,27 @@ Crie um arquivo `.env` na raiz do projeto:
 
 ```env
 OPENAI_API_KEY_EMAIL_ANALYZER=sua-chave-api-aqui
+MAX_UPLOAD_SIZE=16777216  # 16MB em bytes (opcional)
 ```
 
 ## 🏃 Como Executar
 
-### Desenvolvimento (com reload automático)
+### Com Docker (Recomendado)
+
+```bash
+# Build e executar
+docker-compose up -d
+
+# Ver logs
+docker-compose logs -f
+
+# Parar
+docker-compose down
+```
+
+Veja [DOCKER.md](DOCKER.md) para mais detalhes sobre containerização.
+
+### Desenvolvimento Local (com reload automático)
 
 ```bash
 uvicorn app.main:app --reload
@@ -88,6 +104,26 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```
 
 A API estará disponível em: `http://localhost:8000`
+
+## 🖥️ Interface Frontend
+
+O projeto inclui uma interface web interativa localizada em `frontend/`:
+
+```bash
+# Abra o arquivo index.html no navegador
+# Ou use um servidor HTTP simples:
+cd frontend
+python -m http.server 8080
+```
+
+Acesse: `http://localhost:8080`
+
+**Funcionalidades:**
+
+- Análise de emails via texto ou upload de arquivo
+- Suporte a arquivos .txt e .pdf (máx. 16MB)
+- Visualização da classificação e resposta sugerida
+- Interface responsiva e moderna
 
 ## 📚 Documentação API
 
@@ -117,7 +153,9 @@ Analisa um email e retorna a classificação com sugestão de resposta.
 **Parâmetros (Form Data):**
 
 - `text` (string, opcional): Texto do email
-- `file` (file, opcional): Arquivo .txt ou .pdf
+- `file` (file, opcional): Arquivo .txt ou .pdf (máx. 16MB)
+
+**Nota:** Ao menos um dos parâmetros (`text` ou `file`) deve ser fornecido.
 
 **Resposta de sucesso (200):**
 
@@ -168,10 +206,19 @@ email-analyzer/
 │   └── utils/
 │       ├── file_reader.py      # Extração de texto
 │       └── text_preprocessor.py # Limpeza de texto
+├── frontend/                   # Interface web
+│   ├── index.html              # Página principal
+│   ├── script.js               # Lógica frontend
+│   ├── style.css               # Estilos
+│   └── config.js               # Configurações
 ├── scripts/
 │   └── eval_emails.py          # Script de avaliação
+├── Dockerfile                  # Configuração Docker
+├── docker-compose.yml          # Orquestração de containers
+├── .dockerignore               # Arquivos ignorados no build
 ├── .env                        # Variáveis de ambiente (não commitado)
 ├── requirements.txt            # Dependências Python
+├── DOCKER.md                   # Documentação Docker
 └── README.md                   # Este arquivo
 ```
 
@@ -201,7 +248,7 @@ response = requests.post(
 print(response.json())
 ```
 
-## � Pré-processamento de Texto
+## 🔎 Pré-processamento de Texto
 
 O sistema realiza pré-processamento robusto dos emails antes da análise:
 
@@ -225,7 +272,7 @@ Funções disponíveis em `app/utils/text_preprocessor.py`:
 - `get_tokens()` - Retorna lista de palavras
 - `get_text_stats()` - Retorna estatísticas de processamento
 
-## �🛡️ Tratamento de Erros
+## 🛡️ Tratamento de Erros
 
 O sistema possui tratamento robusto de erros:
 

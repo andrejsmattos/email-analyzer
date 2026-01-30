@@ -1,0 +1,26 @@
+services:
+  email-analyzer:
+    build: .
+    container_name: email-analyzer
+    ports:
+      - "8000:8000"
+    environment:
+      - OPENAI_API_KEY_EMAIL_ANALYZER=${OPENAI_API_KEY_EMAIL_ANALYZER}
+      - MAX_UPLOAD_SIZE=16777216
+    volumes:
+      - ./app:/app/app
+    env_file:
+      - .env
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health').read()",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
