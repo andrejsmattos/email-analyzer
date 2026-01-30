@@ -1,0 +1,28 @@
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Git
+.git
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+.DS_Store
+
+# Tests / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Logs
+*.log
