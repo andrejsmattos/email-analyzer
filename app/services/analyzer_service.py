@@ -47,15 +47,13 @@ class EmailAnalyzerService:
             
             logger.info("Enviando para análise de IA...")
             ai_result = self.ai_client.analyze(content)
-            logger.info(f"IA respondeu: categoria={ai_result['category']}")
+            logger.info(f"IA respondeu: categoria={ai_result['category']}, confidence={ai_result['confidence']}")
+            logger.debug(f"Reason (interno): {ai_result['reason']}")
 
             return AnalyzeResponse(
                 category=ai_result["category"],
                 suggested_reply=ai_result["suggested_reply"],
-                confidence=ai_result["confidence"],
-                extracted_chars=len(content),
-                content=content,
-                reason=ai_result["reason"]
+                confidence=ai_result["confidence"]
             )
             
         except HTTPException as exc:
