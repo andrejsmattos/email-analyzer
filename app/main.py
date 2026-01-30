@@ -9,12 +9,16 @@ from app.exceptions import (
 )
 from dotenv import load_dotenv
 import logging
+import os
 
 load_dotenv()
 
 # Configurar logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# Configurar limite de upload (16MB por padrão)
+MAX_UPLOAD_SIZE = int(os.getenv("MAX_UPLOAD_SIZE", 16 * 1024 * 1024))  # 16MB em bytes
 
 app = FastAPI(title="Email Analyzer", version="0.1.0")
 
@@ -26,6 +30,18 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Middleware para validar tamanho do arquivo
+@app.middleware("http")
+async def limit_upload_size(request, call_next):
+    if request.method == "POST":
+        content_length = request.headers.get("content-length")
+        if content_length and int(content_length) > MAX_UPLOAD_SIZE:
+            return HTTPException(
+                status_code=413,
+                detail=f"Arquivo muito grande. Tamanho máximo permitido: {MAX_UPLOAD_SIZE // (1024 * 1024)}MB"
+            )
+    return await call_next(request)
 
 # Registrar Exception Handlers
 app.add_exception_handler(HTTPException, http_exception_handler)
