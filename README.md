@@ -129,8 +129,8 @@ Acesse: `http://localhost:8080`
 
 Acesse a documentação interativa (Swagger):
 
-- **Swagger UI**: `http://localhost:8000/docs`
-- **ReDoc**: `http://localhost:8000/redoc`
+- **Swagger UI**: `http://localhost:8000/api/docs`
+- **ReDoc**: `http://localhost:8000/api/redoc`
 
 ## 🔌 Endpoints
 
@@ -213,9 +213,15 @@ email-analyzer/
 │   └── config.js               # Configurações
 ├── scripts/
 │   └── eval_emails.py          # Script de avaliação
+├── tests/
+│   ├── test_api.py             # Testes de integração da API
+│   ├── test_unit_utils.py      # Testes unitários (preprocessamento)
+│   ├── test_unit_services.py   # Testes unitários (serviço)
+│   └── test_unit_file_reader.py # Testes unitários (extração)
 ├── Dockerfile                  # Configuração Docker
 ├── docker-compose.yml          # Orquestração de containers
 ├── .dockerignore               # Arquivos ignorados no build
+├── pytest.ini                  # Configuração do pytest
 ├── .env                        # Variáveis de ambiente (não commitado)
 ├── requirements.txt            # Dependências Python
 ├── DOCKER.md                   # Documentação Docker
@@ -223,6 +229,32 @@ email-analyzer/
 ```
 
 ## 🧪 Testando a API
+
+### Testes Automatizados
+
+#### Testes de Integração (API)
+
+```bash
+pytest tests/test_api.py -v
+```
+
+#### Testes Unitários
+
+```bash
+# Todos os testes unitários
+pytest tests/test_unit_*.py -v
+
+# Testes específicos
+pytest tests/test_unit_utils.py -v          # Testes de preprocessamento
+pytest tests/test_unit_services.py -v       # Testes de serviço
+pytest tests/test_unit_file_reader.py -v    # Testes de extração de arquivo
+```
+
+#### Rodando Todos os Testes
+
+```bash
+pytest -v
+```
 
 ### Com curl:
 

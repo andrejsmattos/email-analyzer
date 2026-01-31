@@ -19,5 +19,9 @@ nltk==3.8.1
 # Variáveis de ambiente
 python-dotenv==1.0.1
 
+# Testes
+pytest==8.3.6
+pytest-asyncio==0.24.0
+
 # Utilitários
 python-multipart==0.0.20  # Para upload de arquivos no FastAPI

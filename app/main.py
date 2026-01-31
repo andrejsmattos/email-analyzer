@@ -20,7 +20,13 @@ logger = logging.getLogger(__name__)
 # Configurar limite de upload (16MB por padrão)
 MAX_UPLOAD_SIZE = int(os.getenv("MAX_UPLOAD_SIZE", 16 * 1024 * 1024))  # 16MB em bytes
 
-app = FastAPI(title="Email Analyzer", version="0.1.0")
+app = FastAPI(
+    title="Email Analyzer",
+    version="0.1.0",
+    openapi_url="/api/openapi.json",
+    docs_url="/api/docs",
+    redoc_url="/api/redoc"
+)
 
 # Configurar CORS para permitir frontend
 app.add_middleware(
