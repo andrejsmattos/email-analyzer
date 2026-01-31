@@ -21,10 +21,32 @@ logger = logging.getLogger(__name__)
 # Configurar limite de upload (16MB por padrão)
 MAX_UPLOAD_SIZE = int(os.getenv("MAX_UPLOAD_SIZE", 16 * 1024 * 1024))  # 16MB em bytes
 
+# Configurar FastAPI com metadata correta
 app = FastAPI(
-    title="Email Analyzer",
-    version="0.1.0",
-    description="Sistema de análise e classificação de emails usando IA"
+    title="Email Analyzer API",
+    version="1.0.0",
+    description="""
+Sistema de análise e classificação automática de emails corporativos usando IA (OpenAI GPT).
+
+## Funcionalidades
+
+* **Análise de Emails**: Classifica emails em PRODUTIVO ou IMPRODUTIVO
+* **Sugestão de Resposta**: Gera respostas automáticas contextualizadas
+* **Múltiplos Formatos**: Suporta texto direto, arquivos .txt e .pdf
+
+## Categorias
+
+* **PRODUTIVO**: Emails que requerem ação ou resposta específica
+* **IMPRODUTIVO**: Emails que não necessitam de uma ação imediata
+    """,
+    contact={
+        "name": "André Mattos",
+        "url": "https://github.com/andrejsmattos",
+    },
+    openapi_version="3.1.0",
+    docs_url="/docs",
+    redoc_url="/redoc",
+    openapi_url="/openapi.json",
 )
 
 # Configurar CORS para permitir frontend
@@ -55,4 +77,26 @@ app.add_exception_handler(HTTPException, http_exception_handler)
 app.add_exception_handler(RequestValidationError, validation_exception_handler)
 app.add_exception_handler(Exception, general_exception_handler)
 
-app.include_router(api_router, prefix="/api")
+# Incluir rotas da API
+app.include_router(api_router, prefix="/api", tags=["API"])
+
+# Root endpoint
+@app.get("/", tags=["Root"])
+async def root():
+    """
+    Endpoint raiz da API
+    
+    Retorna informações básicas sobre a API e links úteis.
+    """
+    return {
+        "message": "Email Analyzer API",
+        "version": "1.0.0",
+        "status": "online",
+        "docs": "/docs",
+        "health": "/api/health"
+    }
+
+if __name__ == "__main__":
+    import uvicorn
+    port = int(os.getenv("PORT", 8000))
+    uvicorn.run("app.main:app", host="0.0.0.0", port=port, reload=True)
