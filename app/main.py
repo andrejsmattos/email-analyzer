@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from app.api.routes import router as api_router
 from app.exceptions import (
     http_exception_handler,
@@ -20,7 +21,11 @@ logger = logging.getLogger(__name__)
 # Configurar limite de upload (16MB por padrão)
 MAX_UPLOAD_SIZE = int(os.getenv("MAX_UPLOAD_SIZE", 16 * 1024 * 1024))  # 16MB em bytes
 
-app = FastAPI(title="Email Analyzer", version="0.1.0")
+app = FastAPI(
+    title="Email Analyzer",
+    version="0.1.0",
+    description="Sistema de análise e classificação de emails usando IA"
+)
 
 # Configurar CORS para permitir frontend
 app.add_middleware(
@@ -37,9 +42,11 @@ async def limit_upload_size(request, call_next):
     if request.method == "POST":
         content_length = request.headers.get("content-length")
         if content_length and int(content_length) > MAX_UPLOAD_SIZE:
-            return HTTPException(
+            return JSONResponse(
                 status_code=413,
-                detail=f"Arquivo muito grande. Tamanho máximo permitido: {MAX_UPLOAD_SIZE // (1024 * 1024)}MB"
+                content={
+                    "detail": f"Arquivo muito grande. Tamanho máximo permitido: {MAX_UPLOAD_SIZE // (1024 * 1024)}MB"
+                }
             )
     return await call_next(request)
 

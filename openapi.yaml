@@ -1,0 +1,171 @@
+openapi: 3.1.0
+info:
+  title: Email Analyzer API
+  description: Sistema de análise e classificação automática de emails corporativos usando IA (OpenAI GPT)
+  version: 1.0.0
+  contact:
+    name: André Mattos
+    url: https://github.com/andrejsmattos
+
+servers:
+  - url: http://localhost:8000
+    description: Desenvolvimento Local
+  - url: http://localhost
+    description: Docker Compose
+  - url: https://api.seu-dominio.com
+    description: Produção
+
+tags:
+  - name: Health
+    description: Verificação de saúde da API
+  - name: Análise
+    description: Endpoints para análise de emails
+
+paths:
+  /api/health:
+    get:
+      summary: Verificar saúde da API
+      description: Retorna o status de saúde da aplicação
+      operationId: getHealth
+      tags:
+        - Health
+      responses:
+        "200":
+          description: API está saudável
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "ok"
+
+  /api/analyze:
+    post:
+      summary: Analisar email
+      description: Analisa um email e retorna a classificação com sugestão de resposta
+      operationId: analyzeEmail
+      tags:
+        - Análise
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                text:
+                  type: string
+                  description: Texto do email para análise
+                  example: "Prezados, temos um problema com o sistema de pedidos que precisa ser resolvido urgentemente."
+                file:
+                  type: string
+                  format: binary
+                  description: Arquivo de email em formato .txt ou .pdf (máximo 16MB)
+              oneOf:
+                - required: [text]
+                - required: [file]
+      responses:
+        "200":
+          description: Email analisado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnalyzeResponse"
+              example:
+                category: PRODUTIVO
+                suggested_reply: "Olá! Recebemos sua mensagem e iremos analisar sua solicitação em breve. Se possível, envie mais detalhes."
+                confidence: 0.92
+
+        "400":
+          description: Requisição inválida (texto e arquivo vazios)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                detail: "Envie um texto ou um arquivo (em .pdf ou .txt) para a análise do email"
+
+        "413":
+          description: Arquivo muito grande (máximo 16MB)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                detail: "Arquivo muito grande. Tamanho máximo permitido: 16MB"
+
+        "422":
+          description: Erro de validação de dados
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationError"
+
+        "500":
+          description: Erro interno do servidor
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                detail: "Erro ao processar a mensagem do email: descrição do erro"
+
+components:
+  schemas:
+    AnalyzeResponse:
+      type: object
+      title: Resposta de Análise
+      description: Resultado da análise de um email
+      required:
+        - category
+        - suggested_reply
+      properties:
+        category:
+          enum:
+            - PRODUTIVO
+            - IMPRODUTIVO
+          description: "Categoria do email: PRODUTIVO (requer ação) ou IMPRODUTIVO (não requer ação)"
+          example: PRODUTIVO
+        suggested_reply:
+          type: string
+          description: Resposta sugerida automaticamente para o email
+          example: "Olá! Recebemos sua mensagem e iremos analisar sua solicitação em breve."
+        confidence:
+          type: number
+          format: float
+          minimum: 0.0
+          maximum: 1.0
+          description: Confiança da classificação (0.0 a 1.0)
+          example: 0.95
+
+    ErrorResponse:
+      type: object
+      title: Resposta de Erro
+      description: Resposta em caso de erro
+      properties:
+        detail:
+          type: string
+          description: Descrição do erro
+
+    ValidationError:
+      type: object
+      title: Erro de Validação
+      description: Erro de validação de dados enviados
+      properties:
+        detail:
+          type: array
+          items:
+            type: object
+            properties:
+              loc:
+                type: array
+                items:
+                  oneOf:
+                    - type: string
+                    - type: integer
+              msg:
+                type: string
+              type:
+                type: string
