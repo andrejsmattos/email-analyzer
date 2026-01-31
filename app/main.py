@@ -44,15 +44,21 @@ Sistema de análise e classificação automática de emails corporativos usando 
         "url": "https://github.com/andrejsmattos",
     },
     openapi_version="3.1.0",
-    docs_url="/docs",
-    redoc_url="/redoc",
-    openapi_url="/openapi.json",
+    docs_url="/api/docs",
+    redoc_url="/api/redoc",
+    openapi_url="/api/openapi.json",
+    servers=[{"url": "http://emailanalyzer.site", "description": "Produção"}]
 )
 
 # Configurar CORS para permitir frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Em produção, especifique os domínios permitidos
+allow_origins=[
+        "http://emailanalyzer.site",
+        "http://52.3.3.229",
+        "http://localhost",
+        "http://localhost:8000"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
