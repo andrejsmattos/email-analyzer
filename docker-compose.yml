@@ -23,9 +23,11 @@ services:
     container_name: email-analyzer-nginx
     ports:
       - "80:80"
+      - "443:443"
     depends_on:
       - backend
       - frontend
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
     restart: unless-stopped
