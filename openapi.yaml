@@ -63,9 +63,6 @@ paths:
                   type: string
                   format: binary
                   description: Arquivo de email em formato .txt ou .pdf (máximo 16MB)
-              oneOf:
-                - required: [text]
-                - required: [file]
       responses:
         "200":
           description: Email analisado com sucesso
